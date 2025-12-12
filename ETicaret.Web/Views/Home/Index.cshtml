@@ -1,0 +1,145 @@
+﻿@model IEnumerable<ProductDto>
+@{
+    ViewData["Title"] = "Ana Sayfa";
+    var categories = ViewBag.Categories as IEnumerable<ETicaret.Entity.Concrete.Category>;
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="hero-title animate-fadeInUp">
+                    Alışverişin <span>Yeni Adresi</span>
+                </h1>
+                <p class="hero-subtitle animate-fadeInUp">
+                    Binlerce ürün, uygun fiyatlar ve hızlı teslimat ile premium e-ticaret deneyimini yaşayın.
+                </p>
+                <a href="/Products" class="btn btn-hero animate-fadeInUp">
+                    <i class="bi bi-bag me-2"></i>Alışverişe Başla
+                </a>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600" 
+                     alt="Shopping" class="img-fluid" style="border-radius: 2rem; opacity: 0.9;">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">Kategoriler</h2>
+            <p class="section-subtitle">Aradığınız her şey burada</p>
+        </div>
+        <div class="row g-4">
+            @if (categories != null)
+            {
+                @foreach (var category in categories.Take(5))
+                {
+                    var icons = new[] { "bi-laptop", "bi-bag-heart", "bi-house-heart", "bi-bicycle", "bi-book" };
+                    var index = (category.Id - 1) % icons.Length;
+                    <div class="col-6 col-md-4 col-lg">
+                        <a href="/Products?categoryId=@category.Id" class="category-card">
+                            <div class="category-icon">
+                                <i class="bi @icons[index]"></i>
+                            </div>
+                            <h5>@category.Name</h5>
+                        </a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title">Öne Çıkan Ürünler</h2>
+            <p class="section-subtitle">En popüler ürünlerimizi keşfedin</p>
+        </div>
+        <div class="row g-4">
+            @foreach (var product in Model)
+            {
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="product-card">
+                        <div class="product-image-wrapper">
+                            <img src="@(string.IsNullOrEmpty(product.ImageUrl) ? "/images/no-image.png" : product.ImageUrl)" 
+                                 alt="@product.Name" class="product-image">
+                            @if (product.IsFeatured)
+                            {
+                                <span class="product-badge">Öne Çıkan</span>
+                            }
+                            <button class="product-quick-add" onclick="addToCart(@product.Id)">
+                                <i class="bi bi-cart-plus me-1"></i> Sepete Ekle
+                            </button>
+                        </div>
+                        <div class="product-content">
+                            <span class="product-category">@product.CategoryName</span>
+                            <h3 class="product-title">
+                                <a href="/Products/Details/@product.Id" style="text-decoration: none; color: inherit;">
+                                    @product.Name
+                                </a>
+                            </h3>
+                            <div class="product-price">
+                                @if (product.DiscountPrice.HasValue)
+                                {
+                                    <span class="old-price">@product.Price.ToString("C2")</span>
+                                    @product.DiscountPrice.Value.ToString("C2")
+                                }
+                                else
+                                {
+                                    @product.Price.ToString("C2")
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="text-center mt-5">
+            <a href="/Products" class="btn btn-hero">
+                Tüm Ürünleri Gör <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="p-4">
+                    <div class="category-icon mx-auto mb-3" style="background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);">
+                        <i class="bi bi-truck"></i>
+                    </div>
+                    <h5>Ücretsiz Kargo</h5>
+                    <p class="text-muted mb-0">500₺ üzeri siparişlerde</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4">
+                    <div class="category-icon mx-auto mb-3" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h5>Güvenli Ödeme</h5>
+                    <p class="text-muted mb-0">256-bit SSL koruma</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4">
+                    <div class="category-icon mx-auto mb-3">
+                        <i class="bi bi-arrow-repeat"></i>
+                    </div>
+                    <h5>Kolay İade</h5>
+                    <p class="text-muted mb-0">14 gün içinde ücretsiz</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

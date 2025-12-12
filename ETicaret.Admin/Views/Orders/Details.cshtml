@@ -1,0 +1,143 @@
+@model ETicaret.Entity.Concrete.Order
+@{
+    ViewData["Title"] = "Sipariş Detayı";
+}
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="stat-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0">Sipariş #@Model.OrderNumber</h4>
+                @{
+                    var statusClass = Model.Status switch {
+                        ETicaret.Entity.Concrete.OrderStatus.Pending => "badge-pending",
+                        ETicaret.Entity.Concrete.OrderStatus.Processing => "badge-processing",
+                        ETicaret.Entity.Concrete.OrderStatus.Shipped => "badge-shipped",
+                        ETicaret.Entity.Concrete.OrderStatus.Delivered => "badge-delivered",
+                        ETicaret.Entity.Concrete.OrderStatus.Cancelled => "badge-cancelled",
+                        _ => "badge-pending"
+                    };
+                    var statusText = Model.Status switch {
+                        ETicaret.Entity.Concrete.OrderStatus.Pending => "Bekliyor",
+                        ETicaret.Entity.Concrete.OrderStatus.Processing => "Hazırlanıyor",
+                        ETicaret.Entity.Concrete.OrderStatus.Shipped => "Kargoda",
+                        ETicaret.Entity.Concrete.OrderStatus.Delivered => "Teslim Edildi",
+                        ETicaret.Entity.Concrete.OrderStatus.Cancelled => "İptal",
+                        _ => "Bekliyor"
+                    };
+                }
+                <span class="badge-status @statusClass fs-6">@statusText</span>
+            </div>
+
+            <h5 class="mb-3">Sipariş Detayları</h5>
+            <table class="table table-dark-custom">
+                <thead>
+                    <tr>
+                        <th>Ürün</th>
+                        <th>Birim Fiyat</th>
+                        <th>Adet</th>
+                        <th>Toplam</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.OrderItems != null)
+                    {
+                        @foreach (var item in Model.OrderItems)
+                        {
+                            <tr>
+                                <td>@item.Product?.Name</td>
+                                <td>@item.UnitPrice.ToString("C2")</td>
+                                <td>@item.Quantity</td>
+                                <td>@item.TotalPrice.ToString("C2")</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Toplam:</strong></td>
+                        <td><strong>@Model.TotalPrice.ToString("C2")</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="stat-card">
+            <h5 class="mb-3">Durum Güncelle</h5>
+            <form asp-action="UpdateStatus" asp-route-id="@Model.Id" method="post" class="d-flex gap-2">
+                @Html.AntiForgeryToken()
+                <select name="status" class="form-select bg-dark text-light border-secondary" style="width: auto;">
+                    <option value="0" selected="@(Model.Status == ETicaret.Entity.Concrete.OrderStatus.Pending)">Bekliyor</option>
+                    <option value="1" selected="@(Model.Status == ETicaret.Entity.Concrete.OrderStatus.Processing)">Hazırlanıyor</option>
+                    <option value="2" selected="@(Model.Status == ETicaret.Entity.Concrete.OrderStatus.Shipped)">Kargoda</option>
+                    <option value="3" selected="@(Model.Status == ETicaret.Entity.Concrete.OrderStatus.Delivered)">Teslim Edildi</option>
+                    <option value="4" selected="@(Model.Status == ETicaret.Entity.Concrete.OrderStatus.Cancelled)">İptal</option>
+                </select>
+                <button type="submit" class="btn btn-primary-custom">
+                    <i class="bi bi-check-lg me-1"></i>Güncelle
+                </button>
+            </form>
+
+
+            <div class="mt-3 d-flex gap-2">
+                @if (!Model.IsPaid)
+                {
+                    <form asp-action="MarkAsPaid" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-1"></i>Ödendi İşaretle
+                        </button>
+                    </form>
+                }
+                @if (Model.Status != ETicaret.Entity.Concrete.OrderStatus.Cancelled)
+                {
+                    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" 
+                          onsubmit="return confirm('Siparişi iptal etmek istediğinizden emin misiniz?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle me-1"></i>İptal Et
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card mb-4">
+            <h5 class="mb-3"><i class="bi bi-person me-2"></i>Müşteri Bilgileri</h5>
+            <p><strong>Ad Soyad:</strong> @Model.User?.FirstName @Model.User?.LastName</p>
+            <p><strong>E-posta:</strong> @Model.User?.Email</p>
+            <p><strong>Telefon:</strong> @(Model.User?.PhoneNumber ?? "-")</p>
+        </div>
+
+        <div class="stat-card mb-4">
+            <h5 class="mb-3"><i class="bi bi-truck me-2"></i>Teslimat Adresi</h5>
+            <p>@Model.ShippingAddress</p>
+            <p>@Model.ShippingDistrict / @Model.ShippingCity</p>
+            <p>@Model.ShippingPostalCode</p>
+            <p><strong>Telefon:</strong> @Model.ShippingPhone</p>
+        </div>
+
+        <div class="stat-card">
+            <h5 class="mb-3"><i class="bi bi-credit-card me-2"></i>Ödeme Bilgileri</h5>
+            <p><strong>Yöntem:</strong> @Model.PaymentMethod</p>
+            <p><strong>Durum:</strong> 
+                @if (Model.IsPaid)
+                {
+                    <span class="badge bg-success">Ödendi</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning">Ödenmedi</span>
+                }
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-2"></i>Siparişlere Dön
+    </a>
+</div>

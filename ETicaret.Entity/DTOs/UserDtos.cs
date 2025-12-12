@@ -1,0 +1,22 @@
+namespace ETicaret.Entity.DTOs
+{
+    public class UserForLoginDto
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    public class UserForRegisterDto
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+    }
+
+    public class AccessToken
+    {
+        public string Token { get; set; } = string.Empty;
+        public DateTime Expiration { get; set; }
+    }
+}

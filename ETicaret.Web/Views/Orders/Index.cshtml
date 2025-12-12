@@ -1,0 +1,75 @@
+@model IEnumerable<ETicaret.Entity.Concrete.Order>
+@{
+    ViewData["Title"] = "Siparişlerim";
+}
+
+<div class="container py-5">
+    <h2 class="mb-4">Siparişlerim</h2>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">
+            Henüz hiç siparişiniz bulunmamaktadır. <a href="/Products" class="alert-link">Alışverişe Başla</a>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="p-3">Sipariş No</th>
+                                <th class="p-3">Tarih</th>
+                                <th class="p-3">Durum</th>
+                                <th class="p-3">Tutar</th>
+                                <th class="p-3">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var order in Model)
+                            {
+                                <tr>
+                                    <td class="p-3">
+                                        <span class="fw-bold text-primary">#@order.OrderNumber</span>
+                                    </td>
+                                    <td class="p-3">@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td class="p-3">
+                                        @{
+                                            var statusClass = order.Status switch {
+                                                ETicaret.Entity.Concrete.OrderStatus.Pending => "bg-warning text-dark",
+                                                ETicaret.Entity.Concrete.OrderStatus.Processing => "bg-info text-dark",
+                                                ETicaret.Entity.Concrete.OrderStatus.Shipped => "bg-primary",
+                                                ETicaret.Entity.Concrete.OrderStatus.Delivered => "bg-success",
+                                                ETicaret.Entity.Concrete.OrderStatus.Cancelled => "bg-danger",
+                                                _ => "bg-secondary"
+                                            };
+                                            var statusText = order.Status switch {
+                                                ETicaret.Entity.Concrete.OrderStatus.Pending => "Bekliyor",
+                                                ETicaret.Entity.Concrete.OrderStatus.Processing => "Hazırlanıyor",
+                                                ETicaret.Entity.Concrete.OrderStatus.Shipped => "Kargoda",
+                                                ETicaret.Entity.Concrete.OrderStatus.Delivered => "Teslim Edildi",
+                                                ETicaret.Entity.Concrete.OrderStatus.Cancelled => "İptal",
+                                                _ => "Bekliyor"
+                                            };
+                                        }
+                                        <span class="badge @statusClass rounded-pill">@statusText</span>
+                                    </td>
+                                    <td class="p-3 fw-bold">@order.TotalPrice.ToString("C2")</td>
+                                    <td class="p-3">
+                                        <!-- Uncomment when Order Details page is ready 
+                                        <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm btn-outline-primary">
+                                            Detaylar
+                                        </a>
+                                        -->
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>

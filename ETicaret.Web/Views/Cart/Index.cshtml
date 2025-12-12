@@ -1,0 +1,215 @@
+@model CartDto
+
+<div class="container py-5">
+    <h2 class="mb-4">Alışveriş Sepetim</h2>
+
+    @if (Model.CartItems == null || !Model.CartItems.Any())
+    {
+        <div class="alert alert-info">
+            Sepetinizde ürün bulunmamaktadır. <a href="/" class="alert-link">Alışverişe Başla</a>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th scope="col" class="border-0 p-3">Ürün</th>
+                                        <th scope="col" class="border-0 p-3">Fiyat</th>
+                                        <th scope="col" class="border-0 p-3">Adet</th>
+                                        <th scope="col" class="border-0 p-3 text-end">Toplam</th>
+                                        <th scope="col" class="border-0 p-3"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.CartItems)
+                                    {
+                                        <tr>
+                                            <td class="p-3">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="@item.ProductImageUrl" alt="@item.ProductName" class="img-fluid rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                                    <div>
+                                                        <h6 class="mb-0">@item.ProductName</h6>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="p-3">@item.UnitPrice.ToString("C2")</td>
+                                            <td class="p-3">
+                                                <div class="input-group input-group-sm" style="width: 100px;">
+                                                    <button class="btn btn-outline-secondary btn-minus" type="button" data-id="@item.Id">-</button>
+                                                    <input type="text" class="form-control text-center quantity-input" value="@item.Quantity" readonly>
+                                                    <button class="btn btn-outline-secondary btn-plus" type="button" data-id="@item.Id">+</button>
+                                                </div>
+                                            </td>
+                                            <td class="p-3 text-end fw-bold">@item.TotalPrice.ToString("C2")</td>
+                                            <td class="p-3 text-end">
+                                                <button class="btn btn-sm btn-link text-danger remove-btn" data-id="@item.Id">
+                                                    <i class="bi bi-trash"></i> Sil
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-4">Sipariş Özeti</h5>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Ara Toplam</span>
+                            <span class="fw-bold">@Model.GrandTotal.ToString("C2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="text-muted">Kargo</span>
+                            <span class="text-success">Ücretsiz</span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="d-flex justify-content-between mb-4">
+                            <span class="h5 mb-0">Toplam</span>
+                            <span class="h5 mb-0 text-primary">@Model.GrandTotal.ToString("C2")</span>
+                        </div>
+                        
+                        <a href="/Checkout" class="btn btn-primary w-100 py-2 mb-2">Siparişi Tamamla</a>
+                        <a href="/" class="btn btn-outline-secondary w-100 py-2">Alışverişe Devam Et</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Helper for fetch requests
+            const postData = async (url, data) => {
+                const formData = new URLSearchParams();
+                for (const key in data) {
+                    formData.append(key, data[key]);
+                }
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+                return response.json();
+            };
+
+            const btnPluses = document.querySelectorAll('.btn-plus');
+            btnPluses.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const input = this.parentNode.querySelector('.quantity-input');
+                    const quantity = parseInt(input.value) + 1;
+                    updateQuantity(id, quantity);
+                });
+            });
+
+            const btnMinuses = document.querySelectorAll('.btn-minus');
+            btnMinuses.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const input = this.parentNode.querySelector('.quantity-input');
+                    const quantity = parseInt(input.value);
+                    if (quantity > 1) {
+                        updateQuantity(id, quantity - 1);
+                    }
+                });
+            });
+
+            const removeBtns = document.querySelectorAll('.remove-btn');
+            removeBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const id = this.getAttribute('data-id');
+                    
+                    Swal.fire({
+                        title: 'Emin misiniz?',
+                        text: "Bu ürünü sepetten çıkarmak istiyor musunuz?",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Evet, Sil!',
+                        cancelButtonText: 'İptal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            removeItem(id);
+                        }
+                    });
+                });
+            });
+
+            function updateQuantity(id, quantity) {
+                postData('/Cart/UpdateQuantity', { cartItemId: id, quantity: quantity })
+                    .then(response => {
+                        if (response.success) {
+                            location.reload();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Hata',
+                                text: response.message
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata',
+                            text: 'Bir hata oluştu.'
+                        });
+                    });
+            }
+
+            function removeItem(id) {
+                postData('/Cart/RemoveItem', { cartItemId: id })
+                    .then(response => {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Silindi!',
+                                text: 'Ürün sepetten kaldırıldı.',
+                                showConfirmButton: false,
+                                timer: 1500
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Hata',
+                                text: response.message
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata',
+                            text: 'Bir hata oluştu.'
+                        });
+                    });
+            }
+        });
+    </script>
+}

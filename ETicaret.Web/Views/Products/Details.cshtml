@@ -1,0 +1,173 @@
+@model ProductDto
+@{
+    ViewData["Title"] = Model.Name;
+    var relatedProducts = ViewBag.RelatedProducts as IEnumerable<ProductDto>;
+}
+
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Ana Sayfa</a></li>
+            <li class="breadcrumb-item"><a href="/Products" class="text-decoration-none text-muted">Ürünler</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+        <!-- Product Images -->
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm overflow-hidden rounded-4">
+                <img src="@(Model.ImageUrl ?? "https://via.placeholder.com/600")" 
+                     alt="@Model.Name" class="img-fluid w-100 object-fit-cover">
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-lg-6">
+            <div class="ps-lg-4">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge bg-light text-primary border border-primary-subtle rounded-pill px-3 py-2 me-2">
+                        @Model.CategoryName
+                    </span>
+                    @if (Model.IsFeatured)
+                    {
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-2">
+                            <i class="bi bi-star-fill me-1"></i>Öne Çıkan
+                        </span>
+                    }
+                </div>
+
+                <h1 class="display-5 fw-bold mb-3">@Model.Name</h1>
+
+                <div class="mb-4">
+                    @if (Model.DiscountPrice.HasValue)
+                    {
+                        <span class="text-muted text-decoration-line-through fs-4 me-2">@Model.Price.ToString("C2")</span>
+                        <span class="text-danger fw-bold display-6">@Model.DiscountPrice.Value.ToString("C2")</span>
+                    }
+                    else
+                    {
+                        <span class="fw-bold display-6 text-primary">@Model.Price.ToString("C2")</span>
+                    }
+                </div>
+
+                <p class="lead text-muted mb-4">@Model.Description</p>
+
+                <div class="d-flex align-items-center mb-4">
+                    <div class="input-group" style="width: 140px; margin-right: 1rem;">
+                        <button class="btn btn-outline-secondary" type="button" id="btn-minus">-</button>
+                        <input type="text" class="form-control text-center" id="quantity" value="1" readonly>
+                        <button class="btn btn-outline-secondary" type="button" id="btn-plus">+</button>
+                    </div>
+                    <button class="btn btn-primary px-5 py-2 rounded-pill" onclick="addToCartDetails(@Model.Id)">
+                        <i class="bi bi-cart-plus me-2"></i>Sepete Ekle
+                    </button>
+                </div>
+
+                <div class="card bg-light border-0 rounded-3 mb-4">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            @if (Model.Stock > 0)
+                            {
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                <span>Stok Durumu: @Model.Stock Adet</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                                <span class="text-danger fw-bold">Stok Durumu: Tükendi</span>
+                            }
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-truck text-info me-2"></i>
+                            <span>Hızlı Kargo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    @if (relatedProducts != null && relatedProducts.Any())
+    {
+        <div class="mt-5 pt-5 border-top">
+            <h3 class="mb-4">Benzer Ürünler</h3>
+            <div class="row g-4">
+                @foreach (var related in relatedProducts)
+                {
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm h-100 product-card">
+                            <div class="position-relative">
+                                <a href="/Products/Details/@related.Id">
+                                    <img src="@(related.ImageUrl ?? "https://via.placeholder.com/400")" 
+                                         class="card-img-top" alt="@related.Name">
+                                </a>
+                                <button class="btn btn-light rounded-circle shadow-sm position-absolute end-0 top-0 m-3 p-2"
+                                        onclick="addToCart(@related.Id)">
+                                    <i class="bi bi-cart-plus"></i>
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title mb-1">
+                                    <a href="/Products/Details/@related.Id" class="text-decoration-none text-dark">
+                                        @related.Name
+                                    </a>
+                                </h6>
+                                <div class="fw-bold text-primary">
+                                    @if (related.DiscountPrice.HasValue)
+                                    {
+                                        <span class="text-danger">@related.DiscountPrice.Value.ToString("C2")</span>
+                                        <small class="text-muted text-decoration-line-through ms-1">@related.Price.ToString("C2")</small>
+                                    }
+                                    else
+                                    {
+                                        @related.Price.ToString("C2")
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const quantityInput = document.getElementById('quantity');
+            const btnPlus = document.getElementById('btn-plus');
+            const btnMinus = document.getElementById('btn-minus');
+            
+            if(btnPlus && quantityInput) {
+                btnPlus.addEventListener('click', function() {
+                    let val = parseInt(quantityInput.value) || 1;
+                    if (val < @Model.Stock) {
+                        quantityInput.value = val + 1;
+                    }
+                });
+            }
+            
+            if(btnMinus && quantityInput) {
+                btnMinus.addEventListener('click', function() {
+                    let val = parseInt(quantityInput.value) || 1;
+                    if (val > 1) quantityInput.value = val - 1;
+                });
+            }
+        });
+
+        // Wrapper to get quantity for the main product
+        function addToCartDetails(productId) {
+            const quantityInput = document.getElementById('quantity');
+            let quantity = 1;
+            if(quantityInput) {
+                quantity = parseInt(quantityInput.value) || 1;
+            }
+            // Call the global addToCart function defined in _Layout
+            addToCart(productId, quantity);
+        }
+    </script>
+}

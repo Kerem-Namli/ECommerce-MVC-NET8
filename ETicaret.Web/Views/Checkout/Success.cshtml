@@ -1,0 +1,47 @@
+@model ETicaret.Entity.Concrete.Order
+@{
+    ViewData["Title"] = "Siparişiniz Alındı";
+}
+
+<div class="container py-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-5">
+                    <div class="mb-4 text-success">
+                        <i class="bi bi-check-circle-fill" style="font-size: 5rem;"></i>
+                    </div>
+                    
+                    <h2 class="display-5 fw-bold mb-3 success-text">Teşekkürler!</h2>
+                    <p class="lead mb-4">Siparişiniz başarıyla oluşturuldu.</p>
+                    
+                    <div class="alert alert-light border shadow-sm mb-4">
+                        <h5 class="mb-0">Sipariş Numarası: <strong class="text-primary">@Model.OrderNumber</strong></h5>
+                    </div>
+
+                    <p class="mb-5 text-muted">
+                        Sipariş detaylarınız e-posta adresinize gönderilmiştir.<br>
+                        Sipariş durumunu "Siparişlerim" sayfasından takip edebilirsiniz.
+                    </p>
+
+                    <div class="d-grid gap-2 d-sm-flex justify-content-center">
+                        <a href="/Orders" class="btn btn-primary btn-lg px-4 gap-3">
+                            <i class="bi bi-box-seam me-2"></i>Siparişlerim
+                        </a>
+                        <a href="/" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="bi bi-shop me-2"></i>Alışverişe Dön
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .success-text {
+        background: linear-gradient(120deg, #198754, #20c997);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+</style>

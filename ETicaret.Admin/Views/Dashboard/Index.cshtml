@@ -1,0 +1,135 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">@ViewBag.ProductCount</div>
+                    <div class="stat-label">Toplam Ürün</div>
+                </div>
+                <div class="stat-icon blue">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">@ViewBag.OrderCount</div>
+                    <div class="stat-label">Toplam Sipariş</div>
+                </div>
+                <div class="stat-icon green">
+                    <i class="bi bi-cart3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">@ViewBag.UserCount</div>
+                    <div class="stat-label">Kullanıcı</div>
+                </div>
+                <div class="stat-icon orange">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">@String.Format("{0:C0}", ViewBag.TotalRevenue)</div>
+                    <div class="stat-label">Toplam Gelir</div>
+                </div>
+                <div class="stat-icon purple">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <div class="stat-card">
+            <h5 class="mb-4">Son Siparişler</h5>
+            <div class="table-responsive">
+                <table class="table table-dark-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>Sipariş No</th>
+                            <th>Müşteri</th>
+                            <th>Tutar</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.RecentOrders != null)
+                        {
+                            @foreach (var order in ViewBag.RecentOrders)
+                            {
+                                <tr>
+                                    <td>@order.OrderNumber</td>
+                                    <td>@order.User?.FirstName @order.User?.LastName</td>
+                                    <td>@String.Format("{0:C2}", order.TotalPrice)</td>
+                                    <td>
+                                        @{
+                                            var statusClass = order.Status switch {
+                                                ETicaret.Entity.Concrete.OrderStatus.Pending => "badge-pending",
+                                                ETicaret.Entity.Concrete.OrderStatus.Processing => "badge-processing",
+                                                ETicaret.Entity.Concrete.OrderStatus.Shipped => "badge-shipped",
+                                                ETicaret.Entity.Concrete.OrderStatus.Delivered => "badge-delivered",
+                                                ETicaret.Entity.Concrete.OrderStatus.Cancelled => "badge-cancelled",
+                                                _ => "badge-pending"
+                                            };
+                                            var statusText = order.Status switch {
+                                                ETicaret.Entity.Concrete.OrderStatus.Pending => "Bekliyor",
+                                                ETicaret.Entity.Concrete.OrderStatus.Processing => "Hazırlanıyor",
+                                                ETicaret.Entity.Concrete.OrderStatus.Shipped => "Kargoda",
+                                                ETicaret.Entity.Concrete.OrderStatus.Delivered => "Teslim Edildi",
+                                                ETicaret.Entity.Concrete.OrderStatus.Cancelled => "İptal",
+                                                _ => "Bekliyor"
+                                            };
+                                        }
+                                        <span class="badge-status @statusClass">@statusText</span>
+                                    </td>
+                                    <td>@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card h-100">
+            <h5 class="mb-4">Hızlı Bilgiler</h5>
+            <div class="d-flex flex-column gap-3">
+                <div class="d-flex justify-content-between align-items-center p-3" style="background: rgba(249, 115, 22, 0.1); border-radius: 0.75rem;">
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #f97316;">@ViewBag.PendingOrders</div>
+                        <div class="stat-label">Bekleyen Sipariş</div>
+                    </div>
+                    <i class="bi bi-clock" style="font-size: 1.5rem; color: #f97316;"></i>
+                </div>
+                <div class="d-flex justify-content-between align-items-center p-3" style="background: rgba(102, 126, 234, 0.1); border-radius: 0.75rem;">
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #667eea;">@ViewBag.CategoryCount</div>
+                        <div class="stat-label">Kategori</div>
+                    </div>
+                    <i class="bi bi-grid" style="font-size: 1.5rem; color: #667eea;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
